@@ -5,7 +5,9 @@ import { User } from '../../model/user.model';
 
 const routes = express.Router();
 
-routes.get('/', authentication.middleware, (req, res, next) => {
+routes.use(/\/((?!(login|register)).)*/, authentication.middleware);
+
+routes.get('/', (req, res, next) => {
     res.send('joo');
 });
 
