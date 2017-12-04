@@ -5,7 +5,7 @@ import { User } from '../user.model';
 export interface IUserDocument extends Document {
     email: string;
     password: string;
-    comparePassword: (password: string, callback: (error: Error, isMatch: boolean) => void) => void;
+    comparePassword: (password: string) => Promise<boolean>;
 }
 
 const userSchema: Schema = new Schema({
@@ -36,24 +36,22 @@ const userSchema: Schema = new Schema({
     }
 });
 
-userSchema.pre('save', function (next) {
+userSchema.pre('save', async function (next) {
     const user = this;
-    if (this.isModified('password') || this.isNew) {
-        bcrypt.genSalt(10)
-            .then((salt) => bcrypt.hash(user.password, salt))
-            .then((hash) => {
-                user.password = hash;
-                next();
-            }).catch(next);
-    } else {
-        return next();
+    try {
+        if (this.isModified('password') || this.isNew) {
+            const hash = await bcrypt.hash(user.password, await bcrypt.genSalt(10));
+            user.password = hash;
+        }
+    } catch (e) {
+        return next(e);
     }
+
+    return next();
 });
 
-userSchema.methods.comparePassword = function (password, callback) {
-    bcrypt.compare(password, this.password)
-    .then((isMatch) => callback(null, isMatch))
-    .catch(callback);
+userSchema.methods.comparePassword = function (password) {
+    return bcrypt.compare(password, this.password);
 };
 
 export const UserSchema = userSchema;

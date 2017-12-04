@@ -2,6 +2,7 @@ import * as express from 'express';
 import jwt = require('jsonwebtoken');
 import passport = require('passport');
 import { ExtractJwt, Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt';
+import { AuthenticationError } from '../api/errors/authentication.error';
 import { IConfig } from '../config/config.interface';
 import { IUserDocument } from '../model/schemas/user.schema';
 import { User } from '../model/user.model';
@@ -52,65 +53,51 @@ function generateJwt(user: IUserDocument): string {
  * Logs the user in and returns a token
  * @param userDocument The user document
  */
-function login(userDocument: IUserDocument): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-        if (!userDocument) {
-            return reject(new Error('No data supplied!'));
-        }
+async function login(userDocument: IUserDocument): Promise<string> {
+    if (!userDocument) {
+        throw new AuthenticationError(400, 'No data supplied!');
+    }
 
-        if (!userDocument.email || !userDocument.password) {
-            return reject(new Error('Invalid data supplied!'));
-        }
+    if (!userDocument.email || !userDocument.password) {
+        throw new AuthenticationError(400, 'Invalid data supplied!');
+    }
 
-        User.findOne({
-            email: userDocument.email
-        }, (error, user) => {
-            if (error) {
-                return reject(error);
-            }
-
-            if (!user) {
-                return reject('User not found!');
-            }
-
-            user.comparePassword(userDocument.password, (err, isMatch) => {
-                if (isMatch && !err) {
-                    const token = generateJwt(user);
-
-                    resolve(token);
-                } else {
-                    return reject(new Error('Authentication failed.'));
-                }
-            });
-        });
+    const user = await User.findOne({
+        email: userDocument.email
     });
+
+    if (!user) {
+        throw new AuthenticationError(401, 'Authentication failed!');
+    }
+
+    const isMatch = await user.comparePassword(userDocument.password);
+
+    if (isMatch) {
+        const token = generateJwt(user);
+        return token;
+    } else {
+        throw new AuthenticationError(401, 'Authentication failed.');
+    }
 }
 
 /**
  * Registers the user and returns the token that can be used for authentication
  * @param userDocument The user document
  */
-function register(userDocument: IUserDocument): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
-        if (!userDocument) {
-            return reject('No data supplied!');
-        }
+async function register(userDocument: IUserDocument): Promise<string> {
+    if (!userDocument) {
+        throw new AuthenticationError(400, 'No data supplied!');
+    }
 
-        if (!userDocument.email || !userDocument.password) {
-            return reject('Please enter email and password');
-        }
+    if (!userDocument.email || !userDocument.password) {
+        throw new AuthenticationError(400, 'Invalid data supplied!');
+    }
 
-        const newUser = new User(userDocument);
+    const newUser = new User(userDocument);
+    await newUser.save();
 
-        newUser.save((error) => {
-            if (error) {
-                return reject(error);
-            }
-
-            const token = generateJwt(newUser);
-            resolve(token);
-        });
-    });
+    const token = generateJwt(newUser);
+    return token;
 }
 
 const middleware = passport.authenticate('jwt', { session: false });

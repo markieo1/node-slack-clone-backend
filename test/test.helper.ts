@@ -1,17 +1,14 @@
 import * as mongoose from 'mongoose';
+import mochaAsync from '../src/utils/mocha.async';
 
-before((done) => {
-    mongoose.connect('mongodb://localhost/recipe_test');
-    mongoose.connection
-        .once('open', () => done())
-        .on('error', (err) => {
-            console.error('Error connecting to test database', err);
-        });
-});
-
-beforeEach((done) => {
-    const { recipes } = mongoose.connection.collections;
-    recipes.drop(() => {
-        done();
+before(mochaAsync(async () => {
+    await mongoose.connect('mongodb://localhost/slack_test', {
+        useMongoClient: true
     });
-});
+}));
+
+after(mochaAsync(async () => {
+    await mongoose.disconnect();
+}));
+
+export { mochaAsync };

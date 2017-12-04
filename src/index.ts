@@ -4,6 +4,7 @@ import * as http from 'http';
 import mongoose = require('mongoose');
 import * as logger from 'morgan';
 import * as apiRoutes from './api';
+import { ApiError } from './api/errors';
 import * as authentication from './authentication';
 import { IConfig } from './config/config.interface';
 
@@ -56,6 +57,17 @@ app.use('*', (req, res) => {
 app.use((err, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('An error has occured!', err);
     next(err);
+});
+
+app.use((err, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (err instanceof ApiError) {
+        const apiError = err as ApiError;
+        res.status(apiError.statusCode).json({
+            message: apiError.message
+        });
+    } else {
+        next();
+    }
 });
 
 app.use((err, req: express.Request, res: express.Response, next: express.NextFunction) => {
