@@ -64,8 +64,20 @@ app.use((err, req: express.Request, res: express.Response, next: express.NextFun
     });
 });
 
-app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log(`Started listening on port ${port}`);
 });
+
+// Handle ^C
+process.on('SIGINT', shutdown);
+
+// Do graceful shutdown
+function shutdown() {
+    mongoose.disconnect().then(() => {
+        server.close(() => {
+            console.log('Evertyhing shutdown');
+        });
+    });
+}
 
 export default app;
