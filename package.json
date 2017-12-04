@@ -1,0 +1,46 @@
+{
+  "name": "node-typescript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "gulp build",
+    "start": "gulp serve.dev",
+    "start.dev": "gulp serve.dev",
+    "start.nogulp": "npm run tsc && node dist/index.js",
+    "start.prod": "gulp serve.prod",
+    "test": "cross-env NODE_ENV=test mocha --exit --require ts-node/register --recursive ./test/**/*.ts",
+    "tsc": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/express": "^4.0.39",
+    "@types/mongoose": "^4.7.27",
+    "@types/morgan": "^1.7.35",
+    "@types/node": "^8.0.53",
+    "cross-env": "^5.1.1",
+    "express": "^4.16.2",
+    "mongodb": "^2.2.33",
+    "mongoose": "^4.13.4",
+    "morgan": "^1.9.0",
+    "typescript": "^2.6.1"
+  },
+  "devDependencies": {
+    "@types/mocha": "^2.2.44",
+    "@types/supertest": "^2.0.4",
+    "assert": "^1.4.1",
+    "del": "^3.0.0",
+    "gulp": "^3.9.1",
+    "gulp-nodemon": "^2.2.1",
+    "gulp-sourcemaps": "^2.6.1",
+    "gulp-tslint": "^8.1.2",
+    "gulp-typescript": "^3.2.3",
+    "mocha": "^4.0.1",
+    "run-sequence": "^2.2.0",
+    "supertest": "^3.0.0",
+    "ts-node": "^3.3.0",
+    "tslint": "^5.8.0"
+  }
+}
