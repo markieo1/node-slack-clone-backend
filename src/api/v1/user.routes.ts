@@ -1,8 +1,8 @@
 import express = require('express');
-import * as authentication from '../../../authentication';
-import { IUserDocument } from '../../../model/schemas/user.schema';
-import { User } from '../../../model/user.model';
-import { expressAsync } from '../../../utils/express.async';
+import * as authentication from '../../authentication';
+import { IUserDocument } from '../../model/schemas/user.schema';
+import { User } from '../../model/user.model';
+import { expressAsync } from '../../utils/express.async';
 
 const routes = express.Router();
 

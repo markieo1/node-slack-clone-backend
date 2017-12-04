@@ -25,59 +25,129 @@ describe('User', () => {
             await user.save();
         }));
 
-        it('Can login with valid credentials and gets a token', mochaAsync(async () => {
-            const response = await request(app)
-                .post('/api/v1/user/login')
-                .send({
-                    email: userEmail,
-                    password: userPassword
-                })
-                .expect(200);
+        describe('Login', () => {
+            it('Can login with valid credentials and gets a token', mochaAsync(async () => {
+                const response = await request(app)
+                    .post('/api/v1/user/login')
+                    .send({
+                        email: userEmail,
+                        password: userPassword
+                    })
+                    .expect(200);
 
-            const body = response.body;
-            assert(body.token);
-        }));
+                const body = response.body;
+                assert(body.token);
+            }));
 
-        it('Cannot login with invalid credentials', mochaAsync(async () => {
-            const response = await request(app)
-                .post('/api/v1/user/login')
-                .send({
-                    email: 'something@test.nl',
-                    password: 'anotherPassword'
-                })
-                .expect(401);
-        }));
+            it('Cannot login with invalid credentials', mochaAsync(async () => {
+                const response = await request(app)
+                    .post('/api/v1/user/login')
+                    .send({
+                        email: 'something@test.nl',
+                        password: 'anotherPassword'
+                    })
+                    .expect(401);
+            }));
 
-        it('Access the api with the token', mochaAsync(async () => {
-            const loginResponse = await request(app)
-                .post('/api/v1/user/login')
-                .send({
-                    email: userEmail,
-                    password: userPassword
-                })
-                .expect(200);
+            it('Cannot login with missing email', mochaAsync(async () => {
+                const response = await request(app)
+                    .post('/api/v1/user/login')
+                    .send({
+                        password: 'test@123',
+                    })
+                    .expect(400);
+            }));
 
-            const loginBody = loginResponse.body;
-            const token = loginBody.token;
-            assert(token);
+            it('Cannot login with missing password', mochaAsync(async () => {
+                const response = await request(app)
+                    .post('/api/v1/user/login')
+                    .send({
+                        email: 'something@test.nl',
+                    })
+                    .expect(400);
+            }));
 
-            // Make a request to an authenticated call
-            const authResponse = await request(app)
-                .get('/api/v1/user/')
-                .set('Authorization', 'bearer ' + token)
-                .expect(200);
+            it('Can access the api with a valid token', mochaAsync(async () => {
+                const loginResponse = await request(app)
+                    .post('/api/v1/user/login')
+                    .send({
+                        email: userEmail,
+                        password: userPassword
+                    })
+                    .expect(200);
 
-            const message = authResponse.body.message;
-            assert(message === 'You are now logged in!');
-        }));
+                const loginBody = loginResponse.body;
+                const token = loginBody.token;
+                assert(token);
 
-        it('Cannot access the api without a valid token', mochaAsync(async () => {
-            const token = 'SOMEINVALIDTOKEN';
-            // Make a request to an authenticated call
-            await request(app)
-                .get('/api/v1/user/')
-                .set('Authorization', 'bearer ' + token)
-                .expect(401);
-        }));
+                // Make a request to an authenticated call
+                const authResponse = await request(app)
+                    .get('/api/v1/user/')
+                    .set('Authorization', 'bearer ' + token)
+                    .expect(200);
+
+                const message = authResponse.body.message;
+                assert(message === 'You are now logged in!');
+            }));
+
+            it('Cannot access the api without a valid token', mochaAsync(async () => {
+                const token = 'SOMEINVALIDTOKEN';
+                // Make a request to an authenticated call
+                await request(app)
+                    .get('/api/v1/user/')
+                    .set('Authorization', 'bearer ' + token)
+                    .expect(401);
+            }));
+        });
+
+        describe('Registration', () => {
+            it('Can register using a valid email', mochaAsync(async () => {
+                const response = await request(app)
+                    .post('/api/v1/user/register')
+                    .send({
+                        email: 'test@abc.nl',
+                        password: 'abc@123'
+                    })
+                    .expect(200);
+
+                const { token, success } = response.body;
+
+                assert(success === true);
+                assert(token);
+            }));
+
+            it('Cannot register without email', mochaAsync(async () => {
+                const response = await request(app)
+                    .post('/api/v1/user/register')
+                    .send({
+                        password: 'abc@123'
+                    })
+                    .expect(400);
+            }));
+
+            it('Cannot register without password', mochaAsync(async () => {
+                const response = await request(app)
+                    .post('/api/v1/user/register')
+                    .send({
+                        email: 'test@abc.nl'
+                    })
+                    .expect(400);
+            }));
+
+            it('Cannot register without a valid email', mochaAsync(async () => {
+                const response = await request(app)
+                    .post('/api/v1/user/register')
+                    .send({
+                        email: '(d@a).nl',
+                        password: 'abc@123'
+                    })
+                    .expect(400);
+
+                const { error } = response.body;
+
+                assert(error === 'Please fill in a valid email address');
+            }));
+
+        });
     });
 });
