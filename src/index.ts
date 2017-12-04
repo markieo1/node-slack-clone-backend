@@ -4,6 +4,7 @@ import * as http from 'http';
 import mongoose = require('mongoose');
 import * as logger from 'morgan';
 import * as apiRoutes from './api';
+import * as authentication from './authentication';
 import { IConfig } from './config/config.interface';
 
 const config: IConfig = require('../config/config');
@@ -11,11 +12,14 @@ const port = process.env.PORT || config.port;
 
 const app = express();
 
+app.set('secret', process.env.secret || config.secret);
+
 mongoose.Promise = global.Promise;
 
 // Connect to MongoDB.
 if (process.env.NODE_ENV !== 'test') {
-    mongoose.connect(process.env.MONGODB_URI || config.mongoDbUri);
+    mongoose.connect(process.env.MONGODB_URI || config.mongoDbUri,
+        { useMongoClient: true });
     mongoose.connection.on('error', (error) => {
         console.error('MongoDB connection error. Please make sure MongoDB is running.', error);
         process.exit(1);
@@ -38,6 +42,8 @@ app.use((req, res, next) => {
     next();
 });
 
+authentication.setup(app);
+
 // Add the routes
 app.use('/api', apiRoutes);
 
@@ -49,8 +55,12 @@ app.use('*', (req, res) => {
 
 app.use((err, req: express.Request, res: express.Response, next: express.NextFunction) => {
     console.error('An error has occured!', err);
+    next(err);
+});
+
+app.use((err, req: express.Request, res: express.Response, next: express.NextFunction) => {
     res.status(500).json({
-        error: 'An error has occurred!'
+        error: err.message
     });
 });
 

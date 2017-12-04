@@ -1,5 +1,7 @@
 {
     "port": 3000,
     "mongoDbUri": "mongodb://localhost:27017/test",
-    "allowOrigin": "*"
+    "allowOrigin": "*",
+    "secret": "8k06xJI3PjQiusnaXO41Wqi4ABcxkhLpT88rhdKdM8HiIISCpxbnNh3cb96nOBDiwKKeqo8Wp0DJVl8ctPir2QQQcvZXBVxMVypQDzbQk6DHiUKq1NE1MsQ4kzVX71xM",
+    "jwtExpires": "1d"
 }
