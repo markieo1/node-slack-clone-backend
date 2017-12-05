@@ -62,6 +62,9 @@ routes.delete('/:id', expressAsync(async (req, res, next) => {
     res.status(204).send();
 }));
 
+/**
+ * Handles getting all messages
+ */
 routes.get('/:groupId/messages', expressAsync(async (req, res, next) => {
     const groupId = req.params.groupId;
 
@@ -74,6 +77,29 @@ routes.get('/:groupId/messages', expressAsync(async (req, res, next) => {
     }
 
     res.json(group);
+}));
+
+/**
+ * Handles getting one messages
+ */
+routes.get('/:groupId/messages/:messageId', expressAsync(async (req, res, next) => {
+    const groupId = req.params.groupId;
+    const messageId = req.params.messageId;
+
+    const { message } = req.body;
+
+    const group = await Group.findOne({ _id: groupId }, { messages: true });
+    if (!group) {
+        throw new ApiError(404, 'Group not found!');
+    }
+
+    const messageSubDocument = group.messages.id(messageId);
+
+    if (!messageSubDocument) {
+        throw new ApiError(404, 'Message not found!');
+    }
+
+    res.status(200).json(messageSubDocument);
 }));
 
 /**
@@ -151,7 +177,6 @@ routes.delete('/:groupId/messages/:messageId', expressAsync(async (req, res, nex
     }
 
     await messageSubDocument.remove();
-    console.log(group);
     await group.save();
 
     res.status(204).send();
