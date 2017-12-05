@@ -5,6 +5,7 @@ import { User } from '../user.model';
 export interface IUserDocument extends Document {
     email: string;
     password: string;
+    nickname: string;
     comparePassword: (password: string) => Promise<boolean>;
 }
 
@@ -31,6 +32,10 @@ const userSchema: Schema = new Schema({
         /* tslint:enable */
     },
     password: {
+        type: String,
+        required: true
+    },
+    nickname: {
         type: String,
         required: true
     }

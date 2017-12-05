@@ -16,7 +16,7 @@ describe('User', () => {
         const userEmail = 'test@test.nl';
         const userPassword = 'test@123';
 
-        before(mochaAsync(async () => {
+        beforeEach(mochaAsync(async () => {
             const user = new User({
                 email: userEmail,
                 password: userPassword
@@ -149,5 +149,9 @@ describe('User', () => {
             }));
 
         });
+
+        afterEach(mochaAsync(async () => {
+            await User.remove({});
+        }));
     });
 });

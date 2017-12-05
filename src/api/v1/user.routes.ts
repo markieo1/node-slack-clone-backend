@@ -9,6 +9,8 @@ const routes = express.Router();
 routes.use(/\/((?!(login|register)).)*/, authentication.middleware);
 
 routes.get('/', expressAsync(async (req, res, next) => {
+    console.log(req.authenticatedUser);
+
     res.send({
         message: 'You are now logged in!'
     });

@@ -22,7 +22,7 @@ function setup(app: express.Express) {
     passport.use(new JwtStrategy(opts, (payload, done) => {
         User.findOne({
             _id: payload.id
-        }, (err, user) => {
+        }, { password: false }, (err, user) => {
             if (err) {
                 return done(err, false);
             }
@@ -114,6 +114,6 @@ async function register(userDocument: IUserDocument): Promise<string> {
     return token;
 }
 
-const middleware = passport.authenticate('jwt', { session: false });
+const middleware = passport.authenticate('jwt', { session: false, assignProperty: 'authenticatedUser' });
 
 export { setup, middleware, login, register };
