@@ -6,20 +6,16 @@ import * as logger from 'morgan';
 import * as apiRoutes from './api';
 import { ApiError } from './api/errors';
 import * as authentication from './authentication';
-import { IConfig } from './config/config.interface';
+import { Config } from './config/config.const';
 
-const config: IConfig = require('../config/config');
-const port = process.env.PORT || config.port;
-
+const port = Config.port;
 const app = express();
-
-app.set('secret', process.env.secret || config.secret);
 
 mongoose.Promise = global.Promise;
 
 // Connect to MongoDB.
 if (process.env.NODE_ENV !== 'test') {
-    mongoose.connect(process.env.MONGODB_URI || config.mongoDbUri,
+    mongoose.connect(Config.mongoDbUri,
         { useMongoClient: true });
     mongoose.connection.on('error', (error) => {
         console.error('MongoDB connection error. Please make sure MongoDB is running.', error);
@@ -34,7 +30,7 @@ app.use(logger('dev'));
 // CORS headers
 app.use((req, res, next) => {
     // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', process.env.ALLOW_ORIGIN || config.allowOrigin);
+    res.setHeader('Access-Control-Allow-Origin', Config.allowOrigin);
     // Request methods you wish to allow
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
     // Request headers you wish to allow

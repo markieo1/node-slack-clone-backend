@@ -3,20 +3,16 @@ import jwt = require('jsonwebtoken');
 import passport = require('passport');
 import { ExtractJwt, Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt';
 import { AuthenticationError } from '../api/errors/authentication.error';
-import { IConfig } from '../config/config.interface';
+import { Config } from '../config/config.const';
 import { IUserDocument } from '../model/schemas/user.schema';
 import { User } from '../model/user.model';
-
-const config: IConfig = require('../../config/config');
-const secret = process.env.secret || config.secret;
-const expiry = process.env.jwtExpires || config.jwtExpires;
 
 function setup(app: express.Express) {
     app.use(passport.initialize());
 
     const opts: StrategyOptions = {
         jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: secret
+        secretOrKey: Config.secret
     };
 
     passport.use(new JwtStrategy(opts, (payload, done) => {
@@ -43,8 +39,8 @@ function generateJwt(user: IUserDocument): string {
         nickname: user.nickname
     };
 
-    const token = jwt.sign(payload, secret, {
-        expiresIn: expiry
+    const token = jwt.sign(payload, Config.secret, {
+        expiresIn: Config.jwtExpires
     });
 
     return token;
