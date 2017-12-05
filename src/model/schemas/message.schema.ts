@@ -36,11 +36,11 @@ const messageSchema = new Schema({
     },
     sentAt: {
         type: Date,
-        default: Date.now(),
+        default: Date.now
     },
     lastEdit: {
         type: Date,
-        default: Date.now(),
+        default: Date.now
     },
     from: {
         nickname: {
@@ -54,7 +54,7 @@ const messageSchema = new Schema({
 
 messageSchema.pre('save', function (next) {
     const message = this;
-    if (this.isModified('message')) {
+    if (this.isModified('message') && !this.isNew) {
         message.lastEdit = Date.now();
     }
 
