@@ -13,19 +13,21 @@ describe('User', () => {
     }));
 
     describe('Authentication', () => {
-        const userEmail = 'test@test.nl';
-        const userPassword = 'test@123';
-
-        beforeEach(mochaAsync(async () => {
-            const user = new User({
-                email: userEmail,
-                password: userPassword
-            } as IUserDocument);
-
-            await user.save();
-        }));
-
         describe('Login', () => {
+            const userEmail = 'test@test.nl';
+            const userPassword = 'test@123';
+            const userNickname = 'test';
+
+            beforeEach(mochaAsync(async () => {
+                const user = new User({
+                    email: userEmail,
+                    password: userPassword,
+                    nickname: userNickname
+                } as IUserDocument);
+
+                await user.save();
+            }));
+
             it('Can login with valid credentials and gets a token', mochaAsync(async () => {
                 const response = await request(app)
                     .post('/api/v1/user/login')
@@ -106,7 +108,8 @@ describe('User', () => {
                     .post('/api/v1/user/register')
                     .send({
                         email: 'test@abc.nl',
-                        password: 'abc@123'
+                        password: 'abc@123',
+                        nickname: 'test'
                     })
                     .expect(200);
 
@@ -139,7 +142,8 @@ describe('User', () => {
                     .post('/api/v1/user/register')
                     .send({
                         email: '(d@a).nl',
-                        password: 'abc@123'
+                        password: 'abc@123',
+                        nickname: 'test'
                     })
                     .expect(400);
 
