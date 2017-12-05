@@ -96,19 +96,6 @@ async function register(userDocument: IUserDocument): Promise<string> {
 
     const newUser = new User(userDocument);
 
-    try {
-        await newUser.validate();
-    } catch (e) {
-        if (e.errors) {
-            const keys = Object.keys(e.errors);
-            if (keys.length > 0) {
-                throw new AuthenticationError(400, e.errors[keys[0]].message);
-            }
-        }
-
-        throw new AuthenticationError(400, e.message);
-    }
-
     await newUser.save();
 
     const token = generateJwt(newUser);

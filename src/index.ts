@@ -71,6 +71,30 @@ app.use((err, req: express.Request, res: express.Response, next: express.NextFun
 });
 
 app.use((err, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (err instanceof mongoose.Error && err.name === 'ValidationError') {
+        const error = err as any;
+        let message = '';
+
+        if (error.errors) {
+            const keys = Object.keys(error.errors);
+            if (keys.length > 0) {
+                message = error.errors[keys[0]].message;
+            }
+        }
+
+        if (!message) {
+            message = err.message;
+        }
+
+        res.status(400).json({
+            error: message
+        });
+    } else {
+        next(err);
+    }
+});
+
+app.use((err, req: express.Request, res: express.Response, next: express.NextFunction) => {
     res.status(500).json({
         error: err.message
     });

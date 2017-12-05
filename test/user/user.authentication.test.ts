@@ -104,6 +104,8 @@ describe('User', () => {
 
         describe('Registration', () => {
             it('Can register using a valid email', mochaAsync(async () => {
+                const oldCount = await User.count({});
+
                 const response = await request(app)
                     .post('/api/v1/users/register')
                     .send({
@@ -117,6 +119,9 @@ describe('User', () => {
 
                 assert(success === true);
                 assert(token);
+
+                const newCount = await User.count({});
+                assert(oldCount + 1 === newCount);
             }));
 
             it('Cannot register without email', mochaAsync(async () => {

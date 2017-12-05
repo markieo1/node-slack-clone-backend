@@ -141,6 +141,17 @@ describe('Group', () => {
             assert(foundMessage == null);
         }));
 
+        it('Cannot send invalid data to a group', mochaAsync(async () => {
+            const oldCount = group.messages.length;
+            await request(app)
+                .post(`/api/v1/groups/${group.id}/messages`)
+                .send({
+                    invalid: 'Something invalid'
+                })
+                .set('Authorization', 'bearer ' + authToken)
+                .expect(400);
+        }));
+
         afterEach(mochaAsync(async () => {
             await Group.remove({});
         }));
