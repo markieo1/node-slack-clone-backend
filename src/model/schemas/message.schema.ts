@@ -67,4 +67,9 @@ messageSchema.pre('save', function (next) {
     return next();
 });
 
+messageSchema.index({
+    groupId: -1,
+    sentAt: -1
+});
+
 export const MessageSchema = messageSchema;
