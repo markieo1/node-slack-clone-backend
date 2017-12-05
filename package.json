@@ -5,9 +5,8 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "gulp build",
-    "start": "gulp serve.dev",
+    "start": "npm run tsc && node dist/index.js",
     "start.dev": "gulp serve.dev",
-    "start.nogulp": "npm run tsc && node dist/index.js",
     "start.prod": "gulp serve.prod",
     "test": "cross-env NODE_ENV=test mocha --exit --require ts-node/register --recursive ./test/**/*.ts",
     "tsc": "tsc"
