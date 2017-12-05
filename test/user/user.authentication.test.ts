@@ -30,7 +30,7 @@ describe('User', () => {
 
             it('Can login with valid credentials and gets a token', mochaAsync(async () => {
                 const response = await request(app)
-                    .post('/api/v1/user/login')
+                    .post('/api/v1/users/login')
                     .send({
                         email: userEmail,
                         password: userPassword
@@ -43,7 +43,7 @@ describe('User', () => {
 
             it('Cannot login with invalid credentials', mochaAsync(async () => {
                 const response = await request(app)
-                    .post('/api/v1/user/login')
+                    .post('/api/v1/users/login')
                     .send({
                         email: 'something@test.nl',
                         password: 'anotherPassword'
@@ -53,7 +53,7 @@ describe('User', () => {
 
             it('Cannot login with missing email', mochaAsync(async () => {
                 const response = await request(app)
-                    .post('/api/v1/user/login')
+                    .post('/api/v1/users/login')
                     .send({
                         password: 'test@123',
                     })
@@ -62,7 +62,7 @@ describe('User', () => {
 
             it('Cannot login with missing password', mochaAsync(async () => {
                 const response = await request(app)
-                    .post('/api/v1/user/login')
+                    .post('/api/v1/users/login')
                     .send({
                         email: 'something@test.nl',
                     })
@@ -71,7 +71,7 @@ describe('User', () => {
 
             it('Can access the api with a valid token', mochaAsync(async () => {
                 const loginResponse = await request(app)
-                    .post('/api/v1/user/login')
+                    .post('/api/v1/users/login')
                     .send({
                         email: userEmail,
                         password: userPassword
@@ -84,7 +84,7 @@ describe('User', () => {
 
                 // Make a request to an authenticated call
                 const authResponse = await request(app)
-                    .get('/api/v1/user/')
+                    .get('/api/v1/users/')
                     .set('Authorization', 'bearer ' + token)
                     .expect(200);
 
@@ -96,16 +96,30 @@ describe('User', () => {
                 const token = 'SOMEINVALIDTOKEN';
                 // Make a request to an authenticated call
                 await request(app)
-                    .get('/api/v1/user/')
+                    .get('/api/v1/users/')
                     .set('Authorization', 'bearer ' + token)
                     .expect(401);
             }));
         });
 
         describe('Registration', () => {
+            const userEmail = 'test@test.nl';
+            const userPassword = 'test@123';
+            const userNickname = 'test';
+
+            beforeEach(mochaAsync(async () => {
+                const user = new User({
+                    email: userEmail,
+                    password: userPassword,
+                    nickname: userNickname
+                } as IUserDocument);
+
+                await user.save();
+            }));
+
             it('Can register using a valid email', mochaAsync(async () => {
                 const response = await request(app)
-                    .post('/api/v1/user/register')
+                    .post('/api/v1/users/register')
                     .send({
                         email: 'test@abc.nl',
                         password: 'abc@123',
@@ -121,7 +135,7 @@ describe('User', () => {
 
             it('Cannot register without email', mochaAsync(async () => {
                 const response = await request(app)
-                    .post('/api/v1/user/register')
+                    .post('/api/v1/users/register')
                     .send({
                         password: 'abc@123'
                     })
@@ -130,7 +144,7 @@ describe('User', () => {
 
             it('Cannot register without password', mochaAsync(async () => {
                 const response = await request(app)
-                    .post('/api/v1/user/register')
+                    .post('/api/v1/users/register')
                     .send({
                         email: 'test@abc.nl'
                     })
@@ -139,7 +153,7 @@ describe('User', () => {
 
             it('Cannot register without a valid email', mochaAsync(async () => {
                 const response = await request(app)
-                    .post('/api/v1/user/register')
+                    .post('/api/v1/users/register')
                     .send({
                         email: '(d@a).nl',
                         password: 'abc@123',
@@ -150,6 +164,17 @@ describe('User', () => {
                 const { error } = response.body;
 
                 assert(error === 'Please fill in a valid email address');
+            }));
+
+            it('Cannot register with an used email', mochaAsync(async () => {
+                const response = await request(app)
+                    .post('/api/v1/users/register')
+                    .send({
+                        email: userEmail,
+                        password: 'abc@123',
+                        nickname: 'test'
+                    })
+                    .expect(400);
             }));
 
         });

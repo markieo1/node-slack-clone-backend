@@ -1,5 +1,6 @@
 import bcrypt = require('bcrypt');
 import { Document, Schema } from 'mongoose';
+import uniqueValidator = require('mongoose-unique-validator');
 import { User } from '../user.model';
 
 export interface IUserDocument extends Document {
@@ -16,18 +17,6 @@ const userSchema: Schema = new Schema({
         unique: true,
         required: true,
         trim: true,
-        validate: {
-            isAsync: true,
-            validator: (value, cb) => {
-                User.find({
-                    email: value
-                }).limit(1)
-                    .then((users) => {
-                        cb(users.length === 0);
-                    });
-            },
-            msg: 'Email already in use!'
-        },
         /* tslint:disable */
         match: [/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 'Please fill in a valid email address']
         /* tslint:enable */
@@ -59,5 +48,7 @@ userSchema.pre('save', async function (next) {
 userSchema.methods.comparePassword = function (password) {
     return bcrypt.compare(password, this.password);
 };
+
+userSchema.plugin(uniqueValidator);
 
 export const UserSchema = userSchema;

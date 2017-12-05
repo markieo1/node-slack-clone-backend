@@ -1,10 +1,10 @@
 import express = require('express');
-import userRoutes from './user.routes';
 import groupRoutes from './group.routes';
+import userRoutes from './user.routes';
 
 const router = express.Router();
 
-router.use('/user', userRoutes);
-router.use('/group', groupRoutes);
+router.use('/groups', groupRoutes);
+router.use('/users', userRoutes);
 
 export default router;
