@@ -3,11 +3,11 @@ import 'mocha';
 import * as mongoose from 'mongoose';
 import * as request from 'supertest';
 import { Group } from '../../src/model/group.model';
+import { Message } from '../../src/model/message.model';
 import { IGroupDocument } from '../../src/model/schemas/group.schema';
 import { IUserDocument } from '../../src/model/schemas/user.schema';
 import { User } from '../../src/model/user.model';
 import { mochaAsync } from '../test.helper';
-import { Message } from '../../src/model/message.model';
 const app = require('../../src/index').default;
 
 describe('Group', () => {
