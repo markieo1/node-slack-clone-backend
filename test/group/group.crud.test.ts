@@ -7,6 +7,7 @@ import { IGroupDocument } from '../../src/model/schemas/group.schema';
 import { IUserDocument } from '../../src/model/schemas/user.schema';
 import { User } from '../../src/model/user.model';
 import { mochaAsync } from '../test.helper';
+import { Message } from '../../src/model/message.model';
 const app = require('../../src/index').default;
 
 describe('Group', () => {
@@ -116,6 +117,7 @@ describe('Group', () => {
 
         afterEach(mochaAsync(async () => {
             await Group.remove({});
+            await Message.remove({});
         }));
 
         after(mochaAsync(async () => {

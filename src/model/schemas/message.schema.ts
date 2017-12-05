@@ -26,6 +26,11 @@ export interface IMessageDocument extends Document {
         nickname: string;
         id: Schema.Types.ObjectId;
     };
+
+    /**
+     * The group id for this message
+     */
+    groupId: Schema.Types.ObjectId;
 }
 
 const messageSchema = new Schema({
@@ -49,7 +54,8 @@ const messageSchema = new Schema({
             trim: true
         },
         id: Schema.Types.ObjectId
-    }
+    },
+    groupId: Schema.Types.ObjectId
 });
 
 messageSchema.pre('save', function (next) {

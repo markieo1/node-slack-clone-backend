@@ -20,10 +20,9 @@ export interface IGroupDocument extends mongoose.Document {
     updatedAt: Date;
 
     /**
-     * The messages send in the group
+     * The reference to the messages send in the group
      */
-
-    messages: mongoose.Types.DocumentArray<IMessageDocument>;
+    messages: mongoose.Schema.Types.ObjectId[];
 }
 
 const groupSchema = new mongoose.Schema({
@@ -33,7 +32,10 @@ const groupSchema = new mongoose.Schema({
         unique: true,
         trim: true
     },
-    messages: [MessageSchema]
+    messages: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Message'
+    }]
 }, { timestamps: true });
 
 groupSchema.plugin(uniqueValidator);

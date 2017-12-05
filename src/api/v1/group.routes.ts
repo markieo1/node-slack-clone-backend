@@ -1,6 +1,7 @@
 import express = require('express');
 import * as authentication from '../../authentication';
 import { Group } from '../../model/group.model';
+import { Message } from '../../model/message.model';
 import { IGroupDocument } from '../../model/schemas/group.schema';
 import { IMessageDocument } from '../../model/schemas/message.schema';
 import { expressAsync } from '../../utils/express.async';
@@ -86,20 +87,18 @@ routes.get('/:groupId/messages/:messageId', expressAsync(async (req, res, next) 
     const groupId = req.params.groupId;
     const messageId = req.params.messageId;
 
-    const { message } = req.body;
-
     const group = await Group.findOne({ _id: groupId }, { messages: true });
     if (!group) {
         throw new ApiError(404, 'Group not found!');
     }
 
-    const messageSubDocument = group.messages.id(messageId);
+    const message = await Message.findOne({ groupId, _id: messageId });
 
-    if (!messageSubDocument) {
+    if (!message) {
         throw new ApiError(404, 'Message not found!');
     }
 
-    res.status(200).json(messageSubDocument);
+    res.status(200).json(message);
 }));
 
 /**
@@ -124,11 +123,15 @@ routes.post('/:groupId/messages', expressAsync(async (req, res, next) => {
         throw new ApiError(404, 'Group not found!');
     }
 
-    const addedMessage = group.messages.addToSet(messageProps);
+    messageProps.groupId = group._id;
+
+    const message = await Message.create(messageProps);
+
+    group.messages.push(message._id);
 
     await group.save();
 
-    res.status(201).json(addedMessage[0]);
+    res.status(201).json(message);
 }));
 
 /**
@@ -145,17 +148,16 @@ routes.put('/:groupId/messages/:messageId', expressAsync(async (req, res, next) 
         throw new ApiError(404, 'Group not found!');
     }
 
-    const messageSubDocument = group.messages.id(messageId);
+    const foundMessage = await Message.findOne({ groupId, _id: messageId });
 
-    if (!messageSubDocument) {
+    if (!foundMessage) {
         throw new ApiError(404, 'Message not found!');
     }
 
-    messageSubDocument.message = message;
+    foundMessage.message = message;
+    await foundMessage.save();
 
-    await group.save();
-
-    res.status(202).json(messageSubDocument);
+    res.status(202).json(foundMessage);
 }));
 
 /**
@@ -170,13 +172,16 @@ routes.delete('/:groupId/messages/:messageId', expressAsync(async (req, res, nex
         throw new ApiError(404, 'Group not found!');
     }
 
-    const messageSubDocument = group.messages.id(messageId);
+    const foundMessage = await Message.findOne({ groupId, _id: messageId });
 
-    if (!messageSubDocument) {
+    if (!foundMessage) {
         throw new ApiError(404, 'Message not found!');
     }
 
-    await messageSubDocument.remove();
+    await foundMessage.remove();
+
+    group.messages.splice(group.messages.indexOf(foundMessage._id), 1);
+
     await group.save();
 
     res.status(204).send();

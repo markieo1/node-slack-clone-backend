@@ -3,7 +3,9 @@ import 'mocha';
 import * as mongoose from 'mongoose';
 import * as request from 'supertest';
 import { Group } from '../../src/model/group.model';
+import { Message } from '../../src/model/message.model';
 import { IGroupDocument } from '../../src/model/schemas/group.schema';
+import { IMessageDocument } from '../../src/model/schemas/message.schema';
 import { IUserDocument } from '../../src/model/schemas/user.schema';
 import { User } from '../../src/model/user.model';
 import { mochaAsync } from '../test.helper';
@@ -18,6 +20,7 @@ describe('Group', () => {
         let userId;
         let authToken;
         let group: IGroupDocument;
+        let message: IMessageDocument;
 
         before(mochaAsync(async () => {
             await mongoose.connection.dropDatabase();
@@ -48,16 +51,23 @@ describe('Group', () => {
         beforeEach(mochaAsync(async () => {
             group = new Group({
                 name: 'Test group',
-                messages: [
-                    {
-                        message: 'Hi its me',
-                        from: {
-                            id: userId,
-                            nickname: userNickname
-                        }
-                    }
-                ]
+                messages: []
             } as IGroupDocument);
+
+            await group.save();
+
+            message = new Message({
+                groupId: group._id,
+                message: 'Hi its me',
+                from: {
+                    id: userId,
+                    nickname: userNickname
+                }
+            });
+
+            await message.save();
+
+            group.messages.push(message._id);
 
             await group.save();
         }));
@@ -79,7 +89,7 @@ describe('Group', () => {
 
         it('Can get a single message using id', mochaAsync(async () => {
             const response = await request(app)
-                .get(`/api/v1/groups/${group.id}/messages/${group.messages[0].id}`)
+                .get(`/api/v1/groups/${group.id}/messages/${group.messages[0]}`)
                 .set('Authorization', 'bearer ' + authToken)
                 .expect(200);
 
@@ -109,7 +119,7 @@ describe('Group', () => {
 
         it('Can update a message', mochaAsync(async () => {
             await request(app)
-                .put(`/api/v1/groups/${group.id}/messages/${group.messages[0].id}`)
+                .put(`/api/v1/groups/${group.id}/messages/${group.messages[0]}`)
                 .send({
                     message: 'Hi the new text should be this',
                 })
@@ -119,16 +129,16 @@ describe('Group', () => {
             const foundGroup = await Group.findOne({ _id: group._id });
             assert(foundGroup != null);
 
-            const foundMessage = foundGroup.messages.id(group.messages[0].id);
+            const foundMessage = await Message.findOne({ groupId: group._id, _id: group.messages[0] });
 
             assert(foundMessage != null);
             assert(foundMessage.message === 'Hi the new text should be this');
-            assert(foundMessage.lastEdit !== group.messages[0].lastEdit);
+            assert(foundMessage.lastEdit !== message.lastEdit);
         }));
 
         it('Can delete a message', mochaAsync(async () => {
             await request(app)
-                .delete(`/api/v1/groups/${group.id}/messages/${group.messages[0].id}`)
+                .delete(`/api/v1/groups/${group.id}/messages/${group.messages[0]}`)
                 .set('Authorization', 'bearer ' + authToken)
                 .expect(204);
 
@@ -136,7 +146,7 @@ describe('Group', () => {
 
             assert(foundGroup.messages.length !== group.messages.length);
 
-            const foundMessage = foundGroup.messages.id(group.messages[0].id);
+            const foundMessage = await Message.findOne({ groupId: group._id, _id: group.messages[0] });
 
             assert(foundMessage == null);
         }));
@@ -154,6 +164,7 @@ describe('Group', () => {
 
         afterEach(mochaAsync(async () => {
             await Group.remove({});
+            await Message.remove({});
         }));
 
         after(mochaAsync(async () => {
