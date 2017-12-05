@@ -151,10 +151,6 @@ describe('User', () => {
                         nickname: 'test'
                     })
                     .expect(400);
-
-                const { error } = response.body;
-
-                assert(error === 'Please fill in a valid email address');
             }));
 
             it('Cannot register with an used email', mochaAsync(async () => {

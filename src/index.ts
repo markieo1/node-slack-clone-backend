@@ -63,7 +63,7 @@ app.use((err, req: express.Request, res: express.Response, next: express.NextFun
     if (err instanceof ApiError) {
         const apiError = err as ApiError;
         res.status(apiError.statusCode).json({
-            error: apiError.message
+            errors: [apiError.message]
         });
     } else {
         next(err);
@@ -73,21 +73,21 @@ app.use((err, req: express.Request, res: express.Response, next: express.NextFun
 app.use((err, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (err instanceof mongoose.Error && err.name === 'ValidationError') {
         const error = err as any;
-        let message = '';
+        const errors: string[] = [];
 
         if (error.errors) {
             const keys = Object.keys(error.errors);
-            if (keys.length > 0) {
-                message = error.errors[keys[0]].message;
+            for (const field of keys) {
+                errors.push(error.errors[field].message);
             }
         }
 
-        if (!message) {
-            message = err.message;
+        if (errors.length === 0) {
+            errors.push(err.message);
         }
 
         res.status(400).json({
-            error: message
+            errors
         });
     } else {
         next(err);
@@ -96,7 +96,7 @@ app.use((err, req: express.Request, res: express.Response, next: express.NextFun
 
 app.use((err, req: express.Request, res: express.Response, next: express.NextFunction) => {
     res.status(500).json({
-        error: err.message
+        errors: [err.message]
     });
 });
 
