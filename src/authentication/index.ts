@@ -39,7 +39,8 @@ function setup(app: express.Express) {
 function generateJwt(user: IUserDocument): string {
     const payload = {
         email: user.email,
-        id: user._id
+        id: user._id,
+        nickname: user.nickname
     };
 
     const token = jwt.sign(payload, secret, {
