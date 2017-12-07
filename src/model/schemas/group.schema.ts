@@ -38,6 +38,11 @@ const groupSchema = new mongoose.Schema({
     }]
 }, { timestamps: true });
 
+groupSchema.set('toJSON', {
+    virtuals: true,
+    versionKey: false,
+});
+
 groupSchema.plugin(uniqueValidator);
 
 export const GroupSchema = groupSchema;
