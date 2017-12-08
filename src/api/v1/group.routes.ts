@@ -1,4 +1,5 @@
 import express = require('express');
+import * as lodash from 'lodash';
 import * as authentication from '../../authentication';
 import { Group } from '../../model/group.model';
 import { Message } from '../../model/message.model';
@@ -50,7 +51,7 @@ routes.put('/:id', expressAsync(async (req, res, next) => {
         throw new ApiError(404, 'Group not found!');
     }
 
-    Object.assign(foundGroup, {
+    lodash.merge(foundGroup, {
         name: receivedProps.name
     });
 
@@ -145,7 +146,7 @@ routes.put('/:groupId/messages/:messageId', expressAsync(async (req, res, next) 
     const groupId = req.params.groupId;
     const messageId = req.params.messageId;
 
-    const { message } = req.body;
+    const receivedProps = req.body;
 
     const group = await Group.findOne({ _id: groupId }, { messages: true });
     if (!group) {
@@ -158,7 +159,10 @@ routes.put('/:groupId/messages/:messageId', expressAsync(async (req, res, next) 
         throw new ApiError(404, 'Message not found!');
     }
 
-    foundMessage.message = message;
+    lodash.merge(foundMessage, {
+        message: receivedProps.message
+    });
+
     await foundMessage.save();
 
     res.status(202).json(foundMessage);

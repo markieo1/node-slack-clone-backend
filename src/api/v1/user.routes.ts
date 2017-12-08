@@ -1,4 +1,5 @@
 import express = require('express');
+import * as lodash from 'lodash';
 import * as authentication from '../../authentication';
 import { IUserDocument } from '../../model/schemas/user.schema';
 import { User } from '../../model/user.model';
@@ -18,6 +19,7 @@ routes.get('/:id', expressAsync(async (req, res, next) => {
     const userId = req.params.id;
 
     const user = await User.findOne({ _id: userId });
+
     if (!user) {
         throw new ApiError(404, 'User not found!');
     }
@@ -57,7 +59,7 @@ routes.put('/:id', expressAsync(async (req, res, next) => {
         throw new ApiError(404, 'User not found!');
     }
 
-    Object.assign(foundUser, {
+    lodash.merge(foundUser, {
         email: receivedProps.email,
         nickname: receivedProps.nickname,
         password: receivedProps.password
