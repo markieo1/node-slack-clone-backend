@@ -44,15 +44,16 @@ routes.put('/:id', expressAsync(async (req, res, next) => {
     const groupId = req.params.id;
     const receivedProps = req.body;
 
-    const groupProps = {
-        name: receivedProps.name
-    } as IGroupDocument;
+    const foundGroup = await Group.findOne({ _id: groupId });
 
-    const group = await Group.findByIdAndUpdate({
-        _id: groupId
-    }, groupProps);
+    if (!foundGroup) {
+        throw new ApiError(404, 'Group not found!');
+    }
 
-    res.status(202).json(group);
+    foundGroup.name = receivedProps.name;
+    await foundGroup.save();
+
+    res.status(202).json(foundGroup);
 }));
 
 routes.delete('/:id', expressAsync(async (req, res, next) => {
