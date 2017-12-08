@@ -81,7 +81,7 @@ async function login(userDocument: IUserDocument): Promise<string> {
  * Registers the user and returns the token that can be used for authentication
  * @param userDocument The user document
  */
-async function register(userDocument: IUserDocument): Promise<string> {
+async function register(userDocument: IUserDocument): Promise<IUserDocument> {
     if (!userDocument) {
         throw new AuthenticationError(400, 'No data supplied!');
     }
@@ -94,10 +94,9 @@ async function register(userDocument: IUserDocument): Promise<string> {
 
     await newUser.save();
 
-    const token = generateJwt(newUser);
-    return token;
+    return newUser;
 }
 
 const middleware = passport.authenticate('jwt', { session: false, assignProperty: 'authenticatedUser' });
 
-export { setup, middleware, login, register };
+export { setup, middleware, generateJwt, login, register };

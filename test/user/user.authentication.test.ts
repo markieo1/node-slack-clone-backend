@@ -83,13 +83,10 @@ describe('User', () => {
                 assert(token);
 
                 // Make a request to an authenticated call
-                const authResponse = await request(app)
+                await request(app)
                     .get('/api/v1/users/')
                     .set('Authorization', 'bearer ' + token)
                     .expect(200);
-
-                const message = authResponse.body.message;
-                assert(message === 'You are now logged in!');
             }));
 
             it('Cannot access the api without a valid token', mochaAsync(async () => {
@@ -115,13 +112,15 @@ describe('User', () => {
                     })
                     .expect(200);
 
-                const { token, success } = response.body;
+                const { token, email, nickname } = response.body;
 
-                assert(success === true);
                 assert(token);
 
                 const newCount = await User.count({});
                 assert(oldCount + 1 === newCount);
+
+                assert(email === 'test@abc.nl');
+                assert(nickname === 'test');
             }));
 
             it('Cannot register without email', mochaAsync(async () => {

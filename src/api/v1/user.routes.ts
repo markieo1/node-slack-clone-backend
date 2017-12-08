@@ -3,15 +3,26 @@ import * as authentication from '../../authentication';
 import { IUserDocument } from '../../model/schemas/user.schema';
 import { User } from '../../model/user.model';
 import { expressAsync } from '../../utils/express.async';
+import { ApiError } from '../errors/api.error';
 
 const routes = express.Router();
 
 routes.use(/\/((?!(login|register)).)*/, authentication.middleware);
 
 routes.get('/', expressAsync(async (req, res, next) => {
-    res.send({
-        message: 'You are now logged in!'
-    });
+    const users = await User.find({}, { password: false });
+    res.send(users);
+}));
+
+routes.get('/:id', expressAsync(async (req, res, next) => {
+    const userId = req.params.id;
+
+    const user = await User.findOne({ _id: userId });
+    if (!user) {
+        throw new ApiError(404, 'User not found!');
+    }
+
+    res.json(user);
 }));
 
 routes.post('/login', expressAsync(async (req, res, next) => {
@@ -24,14 +35,47 @@ routes.post('/login', expressAsync(async (req, res, next) => {
 routes.post('/register', expressAsync(async (req, res, next) => {
     const userProps: IUserDocument = req.body;
 
-    const token = await authentication.register(userProps);
+    const registeredUser = await authentication.register(userProps);
+
+    const token = authentication.generateJwt(registeredUser);
 
     res.send({
-        success: true,
+        email: registeredUser.email,
+        nickname: registeredUser.nickname,
+        id: registeredUser.id,
         token
     });
 }));
 
-// TODO: Allow updating nickname, email, password. When updating nickname also update the messages
+routes.put('/:id', expressAsync(async (req, res, next) => {
+    const userId = req.params.id;
+    const receivedProps = req.body;
+
+    const foundUser = await User.findOne({ _id: userId }, { password: false });
+
+    if (!foundUser) {
+        throw new ApiError(404, 'User not found!');
+    }
+
+    Object.assign(foundUser, {
+        email: receivedProps.email,
+        nickname: receivedProps.nickname,
+        password: receivedProps.password
+    });
+
+    await foundUser.save();
+
+    // TODO: Updating nickname also update the messages
+
+    res.status(202).json(foundUser);
+}));
+
+routes.delete('/:id', expressAsync(async (req, res, next) => {
+    const userId = req.params.id;
+
+    await User.remove({ _id: userId });
+
+    res.status(204).send();
+}));
 
 export default routes;

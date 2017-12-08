@@ -50,6 +50,15 @@ userSchema.methods.comparePassword = function (password) {
     return bcrypt.compare(password, this.password);
 };
 
+userSchema.set('toJSON', {
+    virtuals: true,
+    versionKey: false,
+    transform: (doc, ret, options) => {
+        delete ret.password;
+        return ret;
+    }
+});
+
 userSchema.plugin(uniqueValidator);
 
 export const UserSchema = userSchema;

@@ -50,7 +50,10 @@ routes.put('/:id', expressAsync(async (req, res, next) => {
         throw new ApiError(404, 'Group not found!');
     }
 
-    foundGroup.name = receivedProps.name;
+    Object.assign(foundGroup, {
+        name: receivedProps.name
+    });
+
     await foundGroup.save();
 
     res.status(202).json(foundGroup);
