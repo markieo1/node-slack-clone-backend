@@ -78,9 +78,7 @@ describe('Group', () => {
                 .set('Authorization', 'bearer ' + authToken)
                 .expect(200);
 
-            const { _id, messages } = response.body;
-
-            assert(_id === group.id);
+            const messages = response.body;
             assert(messages != null);
             assert(messages.length > 0);
             assert(messages[0].message === 'Hi its me');

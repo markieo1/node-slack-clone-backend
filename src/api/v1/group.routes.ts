@@ -75,14 +75,15 @@ routes.get('/:groupId/messages', expressAsync(async (req, res, next) => {
     const groupId = req.params.groupId;
 
     // TODO: Only load the latest messages, since this can be a lot very quickly
-    const group = await Group.findOne({ _id: groupId }, { messages: true })
-        .populate('messages');
+    const group = await Group.findOne({ _id: groupId });
 
     if (!group) {
         throw new ApiError(404, 'Group not found!');
     }
 
-    res.json(group);
+    const messages = await Message.find({ groupId });
+
+    res.json(messages);
 }));
 
 /**
