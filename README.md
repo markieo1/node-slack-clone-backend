@@ -20,13 +20,13 @@ Installation
 Configuration
 =====
 
-| Variable | Value |
-| ------ | ------ |
-| PORT | The port on which to listen for requests. |
-| MONGODB_URI | The URI to connect to mongodb. Include username and password in this. |
-| ALLOW_ORIGIN | Determines from which URl requests are allowed (CORS). |
-| SECRET | The secret to use for signing the JWT token. |
-| JWT_EXPIRES | Determines the expiry of the JWT token. Expressed in seconds or a string describing a time span [zeit/ms](https://github.com/zeit/ms).|
+| Variable | Default | Description |
+| ------ | ------ | ------ |
+| PORT | 3000 |The port on which to listen for requests. |
+| MONGODB_URI | mongodb://localhost:27017/test | The URI to connect to mongodb. Include username and password in this. |
+| ALLOW_ORIGIN | * | Determines from which URl requests are allowed (CORS). |
+| SECRET | somesecret | The secret to use for signing the JWT token. |
+| JWT_EXPIRES | 1d | Determines the expiry of the JWT token. Expressed in seconds or a string describing a time span [zeit/ms](https://github.com/zeit/ms).|
 
 Usage 
 =======
