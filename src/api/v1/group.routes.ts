@@ -115,7 +115,7 @@ routes.post('/:groupId/messages', expressAsync(async (req, res, next) => {
     const receivedMessage = req.body;
 
     const messageProps = {
-        message: receivedMessage.message,
+        message: lodash.trim(receivedMessage.message),
         from: {
             nickname: req.authenticatedUser.nickname,
             id: req.authenticatedUser._id
