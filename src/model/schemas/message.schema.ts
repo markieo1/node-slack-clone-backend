@@ -72,4 +72,9 @@ messageSchema.index({
     sentAt: -1
 });
 
+messageSchema.set('toJSON', {
+    virtuals: true,
+    versionKey: false,
+});
+
 export const MessageSchema = messageSchema;
