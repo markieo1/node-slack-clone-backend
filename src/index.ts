@@ -1,5 +1,6 @@
 import * as bodyParser from 'body-parser';
 import * as express from 'express';
+import * as helmet from 'helmet';
 import * as http from 'http';
 import mongoose = require('mongoose');
 import * as logger from 'morgan';
@@ -22,6 +23,8 @@ if (process.env.NODE_ENV !== 'test') {
         process.exit(1);
     });
 }
+
+app.use(helmet());
 
 app.use(bodyParser.json());
 
