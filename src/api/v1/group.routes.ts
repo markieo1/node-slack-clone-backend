@@ -34,7 +34,8 @@ routes.post('/', expressAsync(async (req, res, next) => {
     const receivedProps = req.body;
 
     const groupProps = {
-        name: receivedProps.name
+        name: receivedProps.name,
+        tags: receivedProps.tags
     } as IGroupDocument;
 
     const group = await Group.create(groupProps);
@@ -52,7 +53,8 @@ routes.put('/:id', expressAsync(async (req, res, next) => {
     }
 
     lodash.merge(foundGroup, {
-        name: receivedProps.name
+        name: receivedProps.name,
+        tags: receivedProps.tags
     });
 
     await foundGroup.save();
