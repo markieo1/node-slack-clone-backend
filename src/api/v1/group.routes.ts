@@ -160,6 +160,10 @@ routes.put('/:groupId/messages/:messageId', expressAsync(async (req, res, next) 
         throw new ApiError(404, 'Message not found!');
     }
 
+    if (foundMessage.from.id.toString() !== req.authenticatedUser.id) {
+        throw new ApiError(401, 'Not allowed to edit other user messages');
+    }
+
     lodash.merge(foundMessage, {
         message: receivedProps.message
     });
@@ -185,6 +189,10 @@ routes.delete('/:groupId/messages/:messageId', expressAsync(async (req, res, nex
 
     if (!foundMessage) {
         throw new ApiError(404, 'Message not found!');
+    }
+
+    if (foundMessage.from.id.toString() !== req.authenticatedUser.id) {
+        throw new ApiError(401, 'Not allowed to delete other user messages');
     }
 
     await foundMessage.remove();

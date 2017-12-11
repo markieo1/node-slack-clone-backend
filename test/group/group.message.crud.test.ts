@@ -17,10 +17,11 @@ describe('Group', () => {
         const userPassword = 'test@123';
         const userNickname = 'test';
 
-        let userId;
-        let authToken;
+        let userId: string;
+        let authToken: string;
         let group: IGroupDocument;
         let message: IMessageDocument;
+        let anotherUserId: string;
 
         before(mochaAsync(async () => {
             await mongoose.connection.dropDatabase();
@@ -46,6 +47,16 @@ describe('Group', () => {
 
             userId = user.id;
             authToken = token;
+
+            const anotherUser = new User({
+                email: 'another@test.nl',
+                password: 'another@123',
+                nickname: 'somebodys nickname'
+            } as IUserDocument);
+
+            await anotherUser.save();
+
+            anotherUserId = anotherUser.id;
         }));
 
         beforeEach(mochaAsync(async () => {
@@ -65,9 +76,19 @@ describe('Group', () => {
                 }
             });
 
-            await message.save();
+            const anotherMessage = new Message({
+                groupId: group._id,
+                message: 'Hi its another me',
+                from: {
+                    id: anotherUserId,
+                    nickname: 'somebodys nickname'
+                }
+            });
 
-            group.messages.push(message._id);
+            await message.save();
+            await anotherMessage.save();
+
+            group.messages.push(message._id, anotherMessage._id);
 
             await group.save();
         }));
@@ -134,6 +155,21 @@ describe('Group', () => {
             assert(foundMessage.lastEdit !== message.lastEdit);
         }));
 
+        it('Cannot update a message from another user', mochaAsync(async () => {
+            await request(app)
+                .put(`/api/v1/groups/${group.id}/messages/${group.messages[1]}`)
+                .send({
+                    message: 'Hi the new text should be this',
+                })
+                .set('Authorization', 'bearer ' + authToken)
+                .expect(401);
+
+            const foundMessage = await Message.findOne({ groupId: group._id, _id: group.messages[1] });
+
+            assert(foundMessage != null);
+            assert(foundMessage.message === 'Hi its another me');
+        }));
+
         it('Can delete a message', mochaAsync(async () => {
             await request(app)
                 .delete(`/api/v1/groups/${group.id}/messages/${group.messages[0]}`)
@@ -147,6 +183,19 @@ describe('Group', () => {
             const foundMessage = await Message.findOne({ groupId: group._id, _id: group.messages[0] });
 
             assert(foundMessage == null);
+        }));
+
+        it('Cannot delete a message from another user', mochaAsync(async () => {
+            await request(app)
+                .delete(`/api/v1/groups/${group.id}/messages/${group.messages[1]}`)
+                .set('Authorization', 'bearer ' + authToken)
+                .expect(401);
+
+            const foundGroup = await Group.findOne({ _id: group._id });
+            assert(foundGroup.messages.length === group.messages.length);
+
+            const foundMessage = await Message.findOne({ groupId: group._id, _id: group.messages[1] });
+            assert(foundMessage != null);
         }));
 
         it('Cannot send invalid data to a group', mochaAsync(async () => {
