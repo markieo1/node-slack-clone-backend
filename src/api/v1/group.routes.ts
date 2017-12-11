@@ -6,6 +6,7 @@ import { Message } from '../../model/message.model';
 import { IGroupDocument } from '../../model/schemas/group.schema';
 import { IMessageDocument } from '../../model/schemas/message.schema';
 import { expressAsync } from '../../utils/express.async';
+import { paginateMiddleware } from '../../utils/paginate.middleware';
 import { ApiError } from '../errors/api.error';
 
 const routes = express.Router();
@@ -71,7 +72,7 @@ routes.delete('/:id', expressAsync(async (req, res, next) => {
 /**
  * Handles getting all messages
  */
-routes.get('/:groupId/messages', expressAsync(async (req, res, next) => {
+routes.get('/:groupId/messages', paginateMiddleware, expressAsync(async (req, res, next) => {
     const groupId = req.params.groupId;
 
     // TODO: Only load the latest messages, since this can be a lot very quickly
