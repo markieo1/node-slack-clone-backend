@@ -138,6 +138,20 @@ describe('User', () => {
             assert(foundUser.nickname === 'New nickname');
         }));
 
+        it('Can update a user\'s nickname and removes the spaces in front and after it', mochaAsync(async () => {
+            await request(app)
+                .put(`/api/v1/users/${user._id}`)
+                .send({
+                    nickname: '              New nickname                   ',
+                })
+                .set('Authorization', 'bearer ' + authToken)
+                .expect(202);
+
+            const foundUser = await User.findOne({ _id: user._id });
+            assert(foundUser != null);
+            assert(foundUser.nickname === 'New nickname');
+        }));
+
         it('Can update a user\'s nickname and updates the messages nicknames', mochaAsync(async () => {
             await request(app)
                 .put(`/api/v1/users/${user._id}`)
