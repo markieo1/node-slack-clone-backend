@@ -1,6 +1,7 @@
 import express = require('express');
 import * as lodash from 'lodash';
 import * as authentication from '../../authentication';
+import { Message } from '../../model/message.model';
 import { IUserDocument } from '../../model/schemas/user.schema';
 import { User } from '../../model/user.model';
 import { expressAsync } from '../../utils/express.async';
@@ -65,9 +66,13 @@ routes.put('/:id', expressAsync(async (req, res, next) => {
         password: receivedProps.password
     });
 
+    const isNicknameModified = foundUser.isModified('nickname');
+
     await foundUser.save();
 
-    // TODO: Updating nickname also update the messages
+    if (isNicknameModified) {
+        await Message.update({ 'from.id': userId }, { 'from.nickname': foundUser.nickname });
+    }
 
     res.status(202).json(foundUser);
 }));
