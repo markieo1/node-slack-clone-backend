@@ -4,10 +4,12 @@ import * as helmet from 'helmet';
 import * as http from 'http';
 import mongoose = require('mongoose');
 import * as logger from 'morgan';
+import neo4j from 'neo4j-driver';
 import * as apiRoutes from './api';
 import { ApiError } from './api/errors';
 import * as authentication from './authentication';
 import { Config } from './config/config.const';
+import { neo4jInRequest } from './db/neo4j.middleware';
 
 const port = Config.port;
 const app = express();
@@ -23,6 +25,16 @@ if (process.env.NODE_ENV !== 'test') {
         process.exit(1);
     });
 }
+
+const driver = neo4j.driver(Config.neo4jUri, neo4j.auth.basic(Config.neo4jUsername, Config.neo4jPassword));
+driver.onCompleted = () => {
+    console.log('Connected neo4j');
+};
+driver.onError = ((error) => {
+    console.error('Neo4J connection error');
+    process.exit(1);
+});
+app.use(neo4jInRequest(driver));
 
 app.use(helmet());
 
@@ -112,6 +124,7 @@ process.on('SIGINT', shutdown);
 
 // Do graceful shutdown
 function shutdown() {
+    driver.close();
     mongoose.disconnect().then(() => {
         server.close(() => {
             console.log('Evertyhing shutdown');

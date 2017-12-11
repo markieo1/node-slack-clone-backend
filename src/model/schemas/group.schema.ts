@@ -27,7 +27,7 @@ export interface IGroupDocument extends mongoose.Document {
     /**
      * The tags of this group
      */
-    tags: string[];
+    tags: mongoose.Types.Array<string>;
 }
 
 const groupSchema = new mongoose.Schema({

@@ -3,5 +3,8 @@
     "mongoDbUri": "mongodb://localhost:27017/test",
     "allowOrigin": "*",
     "secret": "somesecret",
-    "jwtExpires": "1d"
+    "jwtExpires": "1d",
+    "neo4jUri": "bolt://localhost",
+    "neo4jUsername": "test",
+    "neo4jPassword": "test@123"
 }
