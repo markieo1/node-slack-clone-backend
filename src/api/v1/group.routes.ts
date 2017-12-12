@@ -323,4 +323,39 @@ routes.delete('/:groupId/messages/:messageId', expressAsync(async (req, res, nex
     res.status(204).send();
 }));
 
+/**
+ * Handles getting the related groups of the specified group
+ */
+routes.get('/:id/related', expressAsync(async (req, res, next) => {
+    const groupId = req.params.id;
+
+    const isValidId = mongoose.Types.ObjectId.isValid(groupId);
+    if (!isValidId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
+
+    let relatedGroups: IGroupDocument[] = [];
+    if (req.neo4j) {
+        const neoSession = req.neo4j.session();
+
+        const statement = `MATCH (g:Group {mId: $mId })
+                        MATCH (g)-[:IS_ABOUT]->(t:Tag)
+                        MATCH (group:Group)-[r:IS_ABOUT]->(t)
+                        WHERE g <> group
+                        RETURN group.mId as mId`;
+
+        const result = await neoSession.run(statement, { mId: groupId });
+        neoSession.close();
+        const groupIds: string[] = result.records.map((record) => record.get('mId'));
+
+        if (groupIds && groupIds.length > 0) {
+            relatedGroups = await Group.find({ _id: { $in: groupIds } });
+        }
+    } else {
+        throw new ApiError(503, 'Unable to use neo4j!');
+    }
+
+    res.json(relatedGroups);
+}));
+
 export default routes;
