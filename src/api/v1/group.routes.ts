@@ -40,17 +40,19 @@ routes.post('/', expressAsync(async (req, res, next) => {
 
     const group = await Group.create(groupProps);
 
-    const neoSession = req.neo4j.session();
+    if (req.neo4j) {
+        const neoSession = req.neo4j.session();
 
-    const statement = `MERGE (group:Group { mId: $mId, name: $groupName })
-                        WITH group
-                        UNWIND $tags as tags
-                        MERGE (tag:Tag { value: tags })
-                        MERGE (group)-[:IS_ABOUT]->(tag)`;
+        const statement = `MERGE (group:Group { mId: $mId, name: $groupName })
+                            WITH group
+                            UNWIND $tags as tags
+                            MERGE (tag:Tag { value: tags })
+                            MERGE (group)-[:IS_ABOUT]->(tag)`;
 
-    await neoSession.run(statement, { mId: group.id, groupName: group.name, tags: group.tags });
+        await neoSession.run(statement, { mId: group.id, groupName: group.name, tags: group.tags });
 
-    neoSession.close();
+        neoSession.close();
+    }
 
     res.status(201).send(group);
 }));
@@ -75,34 +77,37 @@ routes.put('/:id', expressAsync(async (req, res, next) => {
         // Tags deleted
         foundGroup.tags.remove();
     }
+
     foundGroup.markModified('tags');
 
     await foundGroup.save();
 
-    const neoSession = req.neo4j.session();
+    if (req.neo4j) {
+        const neoSession = req.neo4j.session();
 
-    const statement = `MATCH (group:Group)
-    WHERE group.mId = $mId
-    SET group.name = $groupName
-    WITH group
+        const statement = `MATCH (group:Group)
+        WHERE group.mId = $mId
+        SET group.name = $groupName
+        WITH group
 
-    OPTIONAL MATCH (group)-[r:IS_ABOUT]->(t:Tag)
-    WHERE NOT t.value IN $tags
-    DELETE r
+        OPTIONAL MATCH (group)-[r:IS_ABOUT]->(t:Tag)
+        WHERE NOT t.value IN $tags
+        DELETE r
 
-    WITH group
-    OPTIONAL MATCH (t:Tag)
-    WHERE NOT t.value in $tags AND size((t)<--())=0
-    DELETE t
+        WITH group
+        OPTIONAL MATCH (t:Tag)
+        WHERE NOT t.value in $tags AND size((t)<--())=0
+        DELETE t
 
-    WITH DISTINCT group
-    UNWIND $tags as tags
-    MERGE (tag:Tag { value: tags })
-    MERGE (group)-[:IS_ABOUT]->(tag)`;
+        WITH DISTINCT group
+        UNWIND $tags as tags
+        MERGE (tag:Tag { value: tags })
+        MERGE (group)-[:IS_ABOUT]->(tag)`;
 
-    await neoSession.run(statement, { mId: foundGroup.id, groupName: foundGroup.name, tags: foundGroup.tags });
+        await neoSession.run(statement, { mId: foundGroup.id, groupName: foundGroup.name, tags: foundGroup.tags });
 
-    neoSession.close();
+        neoSession.close();
+    }
 
     res.status(202).json(foundGroup);
 }));
@@ -112,12 +117,16 @@ routes.delete('/:id', expressAsync(async (req, res, next) => {
 
     await Group.remove({ _id: groupId });
 
-    const neoSession = req.neo4j.session();
+    if (req.neo4j) {
+        const neoSession = req.neo4j.session();
 
-    const statement = `MATCH (group:Group { mId: $mId })
-    DETACH DELETE group`;
+        const statement = `MATCH (group:Group { mId: $mId })
+                            DETACH DELETE group`;
 
-    await neoSession.run(statement, { mId: groupId });
+        await neoSession.run(statement, { mId: groupId });
+
+        neoSession.close();
+    }
 
     res.status(204).send();
 }));
