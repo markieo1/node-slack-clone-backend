@@ -16,25 +16,27 @@ const app = express();
 
 mongoose.Promise = global.Promise;
 
-// Connect to MongoDB.
+let driver: neo4j.Driver = null;
 if (process.env.NODE_ENV !== 'test') {
+    // Connect to MongoDB.
     mongoose.connect(Config.mongoDbUri,
         { useMongoClient: true });
     mongoose.connection.on('error', (error) => {
         console.error('MongoDB connection error. Please make sure MongoDB is running.', error);
         process.exit(1);
     });
-}
 
-const driver = neo4j.driver(Config.neo4jUri, neo4j.auth.basic(Config.neo4jUsername, Config.neo4jPassword));
-driver.onCompleted = () => {
-    console.log('Connected neo4j');
-};
-driver.onError = ((error) => {
-    console.error('Neo4J connection error');
-    process.exit(1);
-});
-app.use(neo4jInRequest(driver));
+    // Connect to neo4j
+    driver = neo4j.driver(Config.neo4jUri, neo4j.auth.basic(Config.neo4jUsername, Config.neo4jPassword));
+    driver.onCompleted = () => {
+        console.log('Connected neo4j');
+    };
+    driver.onError = ((error) => {
+        console.error('Neo4J connection error');
+        process.exit(1);
+    });
+    app.use(neo4jInRequest(driver));
+}
 
 app.use(helmet());
 
@@ -124,7 +126,10 @@ process.on('SIGINT', shutdown);
 
 // Do graceful shutdown
 function shutdown() {
-    driver.close();
+    if (driver) {
+        driver.close();
+    }
+
     mongoose.disconnect().then(() => {
         server.close(() => {
             console.log('Evertyhing shutdown');
