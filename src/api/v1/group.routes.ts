@@ -1,5 +1,6 @@
 import express = require('express');
 import * as lodash from 'lodash';
+import * as mongoose from 'mongoose';
 import * as authentication from '../../authentication';
 import { Group } from '../../model/group.model';
 import { Message } from '../../model/message.model';
@@ -21,6 +22,11 @@ routes.get('/', expressAsync(async (req, res, next) => {
 
 routes.get('/:id', expressAsync(async (req, res, next) => {
     const groupId = req.params.id;
+
+    const isValidId = mongoose.Types.ObjectId.isValid(groupId);
+    if (!isValidId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
 
     const group = await Group.findOne({ _id: groupId });
     if (!group) {
@@ -60,6 +66,11 @@ routes.post('/', expressAsync(async (req, res, next) => {
 routes.put('/:id', expressAsync(async (req, res, next) => {
     const groupId = req.params.id;
     const receivedProps = req.body;
+
+    const isValidId = mongoose.Types.ObjectId.isValid(groupId);
+    if (!isValidId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
 
     const foundGroup = await Group.findOne({ _id: groupId });
 
@@ -115,6 +126,11 @@ routes.put('/:id', expressAsync(async (req, res, next) => {
 routes.delete('/:id', expressAsync(async (req, res, next) => {
     const groupId = req.params.id;
 
+    const isValidId = mongoose.Types.ObjectId.isValid(groupId);
+    if (!isValidId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
+
     await Group.remove({ _id: groupId });
 
     if (req.neo4j) {
@@ -137,6 +153,11 @@ routes.delete('/:id', expressAsync(async (req, res, next) => {
 routes.get('/:groupId/messages', expressAsync(async (req, res, next) => {
     const groupId = req.params.groupId;
 
+    const isValidId = mongoose.Types.ObjectId.isValid(groupId);
+    if (!isValidId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
+
     // TODO: Only load the latest messages, since this can be a lot very quickly
     const group = await Group.findOne({ _id: groupId });
 
@@ -155,6 +176,16 @@ routes.get('/:groupId/messages', expressAsync(async (req, res, next) => {
 routes.get('/:groupId/messages/:messageId', expressAsync(async (req, res, next) => {
     const groupId = req.params.groupId;
     const messageId = req.params.messageId;
+
+    const isValidGroupId = mongoose.Types.ObjectId.isValid(groupId);
+    if (!isValidGroupId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
+
+    const isValidMessageId = mongoose.Types.ObjectId.isValid(messageId);
+    if (!isValidMessageId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
 
     const group = await Group.findOne({ _id: groupId }, { messages: true });
     if (!group) {
@@ -176,6 +207,11 @@ routes.get('/:groupId/messages/:messageId', expressAsync(async (req, res, next) 
 routes.post('/:groupId/messages', expressAsync(async (req, res, next) => {
     const groupId = req.params.groupId;
     const receivedMessage = req.body;
+
+    const isValidGroupId = mongoose.Types.ObjectId.isValid(groupId);
+    if (!isValidGroupId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
 
     const messageProps = {
         message: lodash.trim(receivedMessage.message),
@@ -210,6 +246,16 @@ routes.put('/:groupId/messages/:messageId', expressAsync(async (req, res, next) 
     const groupId = req.params.groupId;
     const messageId = req.params.messageId;
 
+    const isValidGroupId = mongoose.Types.ObjectId.isValid(groupId);
+    if (!isValidGroupId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
+
+    const isValidMessageId = mongoose.Types.ObjectId.isValid(messageId);
+    if (!isValidMessageId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
+
     const receivedProps = req.body;
 
     const group = await Group.findOne({ _id: groupId }, { messages: true });
@@ -242,6 +288,16 @@ routes.put('/:groupId/messages/:messageId', expressAsync(async (req, res, next) 
 routes.delete('/:groupId/messages/:messageId', expressAsync(async (req, res, next) => {
     const groupId = req.params.groupId;
     const messageId = req.params.messageId;
+
+    const isValidGroupId = mongoose.Types.ObjectId.isValid(groupId);
+    if (!isValidGroupId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
+
+    const isValidMessageId = mongoose.Types.ObjectId.isValid(messageId);
+    if (!isValidMessageId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
 
     const group = await Group.findOne({ _id: groupId });
     if (!group) {

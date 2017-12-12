@@ -1,5 +1,6 @@
 import express = require('express');
 import * as lodash from 'lodash';
+import * as mongoose from 'mongoose';
 import * as authentication from '../../authentication';
 import { Message } from '../../model/message.model';
 import { IUserDocument } from '../../model/schemas/user.schema';
@@ -9,15 +10,18 @@ import { ApiError } from '../errors/api.error';
 
 const routes = express.Router();
 
-routes.use(/\/((?!(login|register)).)*/, authentication.middleware);
-
-routes.get('/', expressAsync(async (req, res, next) => {
+routes.get('/', authentication.middleware, expressAsync(async (req, res, next) => {
     const users = await User.find({}, { password: false });
     res.send(users);
 }));
 
-routes.get('/:id', expressAsync(async (req, res, next) => {
+routes.get('/:id', authentication.middleware, expressAsync(async (req, res, next) => {
     const userId = req.params.id;
+
+    const isValidId = mongoose.Types.ObjectId.isValid(userId);
+    if (!isValidId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
 
     const user = await User.findOne({ _id: userId });
 
@@ -50,8 +54,14 @@ routes.post('/register', expressAsync(async (req, res, next) => {
     });
 }));
 
-routes.put('/:id', expressAsync(async (req, res, next) => {
+routes.put('/:id', authentication.middleware, expressAsync(async (req, res, next) => {
     const userId = req.params.id;
+
+    const isValidId = mongoose.Types.ObjectId.isValid(userId);
+    if (!isValidId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
+
     const receivedProps = req.body;
 
     const foundUser = await User.findOne({ _id: userId }, { password: false });
@@ -77,8 +87,13 @@ routes.put('/:id', expressAsync(async (req, res, next) => {
     res.status(202).json(foundUser);
 }));
 
-routes.delete('/:id', expressAsync(async (req, res, next) => {
+routes.delete('/:id', authentication.middleware, expressAsync(async (req, res, next) => {
     const userId = req.params.id;
+
+    const isValidId = mongoose.Types.ObjectId.isValid(userId);
+    if (!isValidId) {
+        throw new ApiError(400, 'Invalid id supplied!');
+    }
 
     await User.remove({ _id: userId });
 
