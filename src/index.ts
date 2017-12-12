@@ -32,7 +32,7 @@ if (process.env.NODE_ENV !== 'test') {
         console.log('Connected neo4j');
     };
     driver.onError = ((error) => {
-        console.error('Neo4J connection error');
+        console.error('Neo4J connection error', error);
         process.exit(1);
     });
     app.use(neo4jInRequest(driver));
