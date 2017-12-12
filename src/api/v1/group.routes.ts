@@ -90,6 +90,11 @@ routes.put('/:id', expressAsync(async (req, res, next) => {
     WHERE NOT t.value IN $tags
     DELETE r
 
+    WITH group
+    OPTIONAL MATCH (t:Tag)
+    WHERE NOT t.value in $tags AND size((t)<--())=0
+    DELETE t
+
     WITH DISTINCT group
     UNWIND $tags as tags
     MERGE (tag:Tag { value: tags })
@@ -112,7 +117,7 @@ routes.delete('/:id', expressAsync(async (req, res, next) => {
     const statement = `MATCH (group:Group { mId: $mId })
     DETACH DELETE group`;
 
-    await neoSession.run(statement, { groupId });
+    await neoSession.run(statement, { mId: groupId });
 
     res.status(204).send();
 }));
