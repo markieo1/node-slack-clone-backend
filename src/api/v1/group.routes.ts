@@ -156,14 +156,16 @@ routes.get('/:groupId/messages', paginateMiddleware, expressAsync(async (req, re
         throw new ApiError(400, 'Invalid id supplied!');
     }
 
-    // TODO: Only load the latest messages, since this can be a lot very quickly
     const group = await Group.findOne({ _id: groupId });
 
     if (!group) {
         throw new ApiError(404, 'Group not found!');
     }
 
-    const messages = await Message.find({ groupId });
+    // Only load the latest messages, since this can be a lot very quickly
+    const messages = await Message.find({ sentAt: { $lt: req.lastDisplayedDate }, groupId })
+        .sort({ sentAt: -1 })
+        .limit(req.pageSize);
 
     res.json(messages);
 }));
