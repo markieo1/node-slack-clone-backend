@@ -12,13 +12,13 @@ declare global {
             /**
              * The current page, will be null if not specified in query
              */
-            page?: number;
+            lastDisplayedDate?: Date;
 
             /**
              * The current pageSize, will be null if not specified in query
              */
             pageSize?: number;
-            
+
             /*
              * The connection to the driver of neo4j
              */

@@ -2,18 +2,15 @@ import express = require('express');
 import * as lodash from 'lodash';
 import * as mongoose from 'mongoose';
 import * as authentication from '../../authentication';
+import { paginateMiddleware } from '../../middleware/paginate.middleware';
 import { Group } from '../../model/group.model';
 import { Message } from '../../model/message.model';
 import { IGroupDocument } from '../../model/schemas/group.schema';
 import { IMessageDocument } from '../../model/schemas/message.schema';
 import { expressAsync } from '../../utils/express.async';
-import { paginateMiddleware } from '../../utils/paginate.middleware';
 import { ApiError } from '../errors/api.error';
 
 const routes = express.Router();
-
-// Add the auth middelware, since all these requests need to be authenticated
-routes.use(authentication.middleware);
 
 routes.get('/', expressAsync(async (req, res, next) => {
     const groups = await Group.find({});
