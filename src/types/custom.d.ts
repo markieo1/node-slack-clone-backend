@@ -1,4 +1,5 @@
 import { IUserDocument } from "../model/schemas/user.schema";
+import neo4j from 'neo4j-driver';
 
 declare global {
     namespace Express {
@@ -17,6 +18,11 @@ declare global {
              * The current pageSize, will be null if not specified in query
              */
             pageSize?: number;
+            
+            /*
+             * The connection to the driver of neo4j
+             */
+            neo4j?: neo4j.Driver;
         }
     }
 }

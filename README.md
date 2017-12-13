@@ -46,8 +46,3 @@ Make sure you have Node.js installed.
     npm start
     
 Your app should now be running on localhost:3000.
-
-Credits
-=======
-
-* [Marco Havermans](https://github.com/markieo1/) for creating this application

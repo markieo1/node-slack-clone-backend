@@ -23,6 +23,11 @@ export interface IGroupDocument extends mongoose.Document {
      * The reference to the messages send in the group
      */
     messages: mongoose.Schema.Types.ObjectId[];
+
+    /**
+     * The tags of this group
+     */
+    tags: mongoose.Types.Array<string>;
 }
 
 const groupSchema = new mongoose.Schema({
@@ -35,7 +40,8 @@ const groupSchema = new mongoose.Schema({
     messages: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Message'
-    }]
+    }],
+    tags: [String]
 }, { timestamps: true });
 
 groupSchema.set('toJSON', {

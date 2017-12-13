@@ -185,6 +185,12 @@ describe('User', () => {
             assert(foundUser == null);
         }));
 
+        it('Cannot access the api with an GET by id request for login', mochaAsync(async () => {
+            await request(app)
+            .get(`/api/v1/users/login`)
+            .expect(401);
+        }));
+
         afterEach(mochaAsync(async () => {
             await User.remove({ _id: { $ne: authUser._id } });
             await Group.remove({});

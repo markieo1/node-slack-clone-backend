@@ -23,4 +23,19 @@ export interface IConfig {
      * The expiry of the JWT token
      */
     jwtExpires: number | string;
+
+    /**
+     * The uri to use for neo4j
+     */
+    neo4jUri: string;
+
+    /**
+     * The username to use for neo4j
+     */
+    neo4jUsername: string;
+
+    /**
+     * The password to use for neo4j
+     */
+    neo4jPassword: string;
 }
