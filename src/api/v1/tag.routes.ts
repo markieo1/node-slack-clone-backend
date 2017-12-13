@@ -7,9 +7,6 @@ import { ApiError } from '../errors/api.error';
 
 const routes = express.Router();
 
-// Add the auth middelware, since all these requests need to be authenticated
-routes.use(authentication.middleware);
-
 routes.get('/', expressAsync(async (req, res, next) => {
     const tags: string[] = await Group.distinct('tags');
 

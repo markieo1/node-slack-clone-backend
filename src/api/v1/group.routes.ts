@@ -2,6 +2,7 @@ import express = require('express');
 import * as lodash from 'lodash';
 import * as mongoose from 'mongoose';
 import * as authentication from '../../authentication';
+import { paginateMiddleware } from '../../middleware/paginate.middleware';
 import { Group } from '../../model/group.model';
 import { Message } from '../../model/message.model';
 import { IGroupDocument } from '../../model/schemas/group.schema';
@@ -10,9 +11,6 @@ import { expressAsync } from '../../utils/express.async';
 import { ApiError } from '../errors/api.error';
 
 const routes = express.Router();
-
-// Add the auth middelware, since all these requests need to be authenticated
-routes.use(authentication.middleware);
 
 routes.get('/', expressAsync(async (req, res, next) => {
     const groups = await Group.find({});
@@ -150,7 +148,7 @@ routes.delete('/:id', expressAsync(async (req, res, next) => {
 /**
  * Handles getting all messages
  */
-routes.get('/:groupId/messages', expressAsync(async (req, res, next) => {
+routes.get('/:groupId/messages', paginateMiddleware, expressAsync(async (req, res, next) => {
     const groupId = req.params.groupId;
 
     const isValidId = mongoose.Types.ObjectId.isValid(groupId);
@@ -158,14 +156,16 @@ routes.get('/:groupId/messages', expressAsync(async (req, res, next) => {
         throw new ApiError(400, 'Invalid id supplied!');
     }
 
-    // TODO: Only load the latest messages, since this can be a lot very quickly
     const group = await Group.findOne({ _id: groupId });
 
     if (!group) {
         throw new ApiError(404, 'Group not found!');
     }
 
-    const messages = await Message.find({ groupId });
+    // Only load the latest messages, since this can be a lot very quickly
+    const messages = await Message.find({ sentAt: { $lt: req.lastDisplayedDate }, groupId })
+        .sort({ sentAt: -1 })
+        .limit(req.pageSize);
 
     res.json(messages);
 }));
