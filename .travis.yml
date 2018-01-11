@@ -15,4 +15,5 @@ cache:
 script: # the build step
   - npm run tsc
   - docker build -t markieo/slack-clone-api:latest .
+  - docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
   - docker push markieo/slack-clone-api 
