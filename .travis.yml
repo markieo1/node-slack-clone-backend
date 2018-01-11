@@ -4,7 +4,6 @@ language: node_js
 
 node_js:
   - node
-  - "8"
 
 services:
   - docker
@@ -15,4 +14,5 @@ cache:
 
 script: # the build step
   - npm run tsc
-  - docker build -t markieo/slack-clone-api .
+  - docker build -t markieo/slack-clone-api:latest .
+  - docker push markieo/slack-clone-api 
