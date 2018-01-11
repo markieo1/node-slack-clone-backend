@@ -9,8 +9,7 @@
     "start.dev": "gulp serve.dev",
     "start.prod": "node dist/index.js",
     "test": "cross-env NODE_ENV=test mocha --exit --require ts-node/register --recursive ./test/**/*.ts",
-    "tsc": "tsc",
-    "postinstall": "npm run tsc"
+    "tsc": "tsc"
   },
   "keywords": [],
   "author": "",
